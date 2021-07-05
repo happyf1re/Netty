@@ -26,6 +26,7 @@ public class StringInputHandler extends ChannelInboundHandlerAdapter {
 
     Path serverRoot = Paths.get("root");
     //мапа для клиентов
+    //мапа для клиентов
     private final Map<Channel, String> clients = new HashMap<>();
 
     @Override
@@ -33,6 +34,9 @@ public class StringInputHandler extends ChannelInboundHandlerAdapter {
 
         clients.putIfAbsent(ctx.channel(), "user");
 
+
+
+        //по совету коллеги сразу сделал массив строк, чтобы убрать разбивку на токены
         //по совету коллеги сразу сделал массив строк, чтобы убрать разбивку на токены
         String message = String.valueOf(msg);
         String[] cmd = message
@@ -73,6 +77,10 @@ public class StringInputHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
+
+
+    //делал на 1.8, так что конструкция File.of была заменена
+    //чтение
     //делал на 1.8, так что конструкция File.of была заменена
     //чтение
     private Object readFile(String fileName, Path serverRoot) throws IOException {
@@ -84,12 +92,15 @@ public class StringInputHandler extends ChannelInboundHandlerAdapter {
     }
 
     //копирование
+    //копирование
     private Object copyFile(String fileName, Path serverRoot, String target) throws IOException {
         Files.copy((Paths.get(String.valueOf(serverRoot), fileName)), (Paths.get(String.valueOf(serverRoot), target)));
         return "File/Directory " + fileName + " copy in " + target;
     }
 
 
+    //удаление файла или директории, работает корректно, даже если в директории есть файлы
+    //плохо работает проверка на наличие файла, клиент крашится
     //удаление файла или директории, работает корректно, даже если в директории есть файлы
     //плохо работает проверка на наличие файла, клиент крашится
     private Object deleteFile(String fileName, Path serverRoot) throws IOException {
@@ -116,17 +127,20 @@ public class StringInputHandler extends ChannelInboundHandlerAdapter {
     }
 
     //смена директории вверх
+    //смена директории вверх
     private Object changeDirectoryUp() {
         serverRoot = serverRoot.getParent();
         return "change directory " + serverRoot;
     }
 
     //смена директории на корневой каталог
+    //смена директории на корневой каталог
     private Object changeDirectoryToRoot() {
         serverRoot = Paths.get("root");
         return "change directory " + serverRoot;
     }
 
+    //смена директории вглубь
     //смена директории вглубь
     private Object changeDirectory(String change) {
         if (Files.exists(Paths.get(String.valueOf(serverRoot), change))) {
@@ -138,6 +152,7 @@ public class StringInputHandler extends ChannelInboundHandlerAdapter {
     }
 
     //создание директории
+    //создание директории
     private Object createDirectory(String dir, Path serverRoot) throws IOException {
         if (!Files.exists(Paths.get(String.valueOf(serverRoot), dir))) {
             Files.createDirectory(Paths.get(String.valueOf(serverRoot), dir));
@@ -148,11 +163,15 @@ public class StringInputHandler extends ChannelInboundHandlerAdapter {
     }
 
     //смена ника
+    //смена ника
     private Object changeNick(String newNick, Channel client) {
         clients.replaceAll((k, v) -> newNick);
         return "New nickname " + newNick;
     }
 
+    // touch (filename) - создание файла
+    //коммент для пуллреквеста, ниже метод
+    //метод упрощён и переделан
     // touch (filename) - создание файла
     //коммент для пуллреквеста, ниже метод
     //метод упрощён и переделан
@@ -165,6 +184,7 @@ public class StringInputHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
+    //корректный вывод файлов в текущем каталоге
     //корректный вывод файлов в текущем каталоге
     private String getFilesList() {
         String[] servers = new File(String.valueOf(Paths.get(String.valueOf(serverRoot)))).list();
